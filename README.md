@@ -137,17 +137,7 @@ Details: `postman/README.md`.
 
 `docker-compose.yml` runs MySQL (3307), the backend (8080), the frontend (80) and the Python service (5000). Docker is not required for local development.
 
-## 🐛 Troubleshooting
-
-**"Server unreachable" / login refuses everything** — the backend is not running. Start `start-backend.cmd` and check that http://localhost:8080/api/menus responds.
-
-**A change disappeared after refresh** — it never reached MySQL; the backend was stopped. The red banner now tells you when that happens.
-
-**`UnsupportedClassVersionError`** — your `java` on the PATH is Java 8. `start.cmd` selects a correct JDK automatically, or install: `winget install EclipseAdoptium.Temurin.21.JDK`.
-
-**"Generate video" does nothing** — the Python service on port 5000 is not running. Start it with `start-video.cmd`; the script finds a Python that has Flask and Pillow, or creates a `.venv`.
-
-**The chatbot answers with an error** — `menu-app/.env` is missing or `VITE_GROQ_API_KEY` is empty. Vite only reads `.env` at startup, so restart the dev server after editing it.
+Having trouble starting the app? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## 🎥 Video
 
