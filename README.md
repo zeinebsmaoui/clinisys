@@ -4,6 +4,8 @@ A clinic management app built with React, Spring Boot and MySQL. Clinisys lets a
 
 I built it as a full-stack learning project: a real REST API, a real database, and a UI that talks to both.
 
+> The interface is in French; this README is in English.
+
 ## 🍿 Technologies
 
 - React 19
