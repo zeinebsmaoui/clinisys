@@ -1,16 +1,57 @@
-# React + Vite
+# Clinisys — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite frontend for [Clinisys](../README.md), a clinic management app.
+It talks to the Spring Boot backend on port 8080 and the Python video service on
+port 5000.
 
-Currently, two official plugins are available:
+## Run
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+From the repository root (recommended, starts everything):
 
-## React Compiler
+```powershell
+start.cmd
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Frontend alone:
 
-## Expanding the ESLint configuration
+```powershell
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The app opens on http://localhost:5173.
+
+## Environment
+
+The chatbot uses Groq, and its key is not committed. Copy `.env.example` to
+`.env` and fill it in:
+
+```
+VITE_GROQ_API_KEY=your_key_here
+```
+
+Vite only reads `.env` at startup, so restart the dev server after editing it.
+
+## Structure
+
+```
+src/
+├── api/          # one module per backend resource (captures, menus, modules, employees)
+├── components/   # sidebar, capture grid/editor, modals, chatbot, notifications
+├── pages/        # Login, Home (modules), Employees
+├── App.jsx       # module → menu → capture navigation and state
+└── main.jsx
+```
+
+## Build
+
+```powershell
+npm run build
+```
+
+Output goes to `dist/`.
+
+## Related docs
+
+- Root [README](../README.md) — features, setup, troubleshooting
+- [Postman tests](../postman/README.md) — API test collection

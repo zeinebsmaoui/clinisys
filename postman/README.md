@@ -1,56 +1,56 @@
-# Tests Postman - API Clinisys
+# Postman Tests — Clinisys API
 
-Collection de tests de l'API REST du backend Spring Boot.
+Test collection for the Spring Boot backend's REST API.
 
-| Fichier | Role |
-| ------- | ---- |
-| `Clinisys-API.postman_collection.json` | 4 dossiers de tests (modules, menus, captures, employes) + dossier manuel |
+| File | Purpose |
+| ---- | ------- |
+| `Clinisys-API.postman_collection.json` | 4 test folders (modules, menus, captures, employees) + a manual folder |
 | `Clinisys-Local.postman_environment.json` | `baseUrl`, `email`, `password` |
 
-## 1. Importer
+## 1. Import
 
-1. Ouvrir Postman.
-2. **Import** (ou `Ctrl+O`) puis glisser les **deux** fichiers JSON.
-3. En haut a droite, choisir l'environnement **Clinisys Local**.
+1. Open Postman.
+2. **Import** (or `Ctrl+O`) and drag in **both** JSON files.
+3. Top right, select the **Clinisys Local** environment.
 
-## 2. Demarrer le backend
+## 2. Start the backend
 
 ```powershell
 start-backend.cmd
 ```
 
-Verifier : `http://localhost:8080/api/modules` repond.
+Check that `http://localhost:8080/api/modules` responds.
 
-## 3. Executer
+## 3. Run
 
-Toujours dans l'ordre, car les identifiants sont transmis entre les dossiers :
+Always in order, because IDs are passed between folders:
 
-1. **1. Authentification** -> `Login admin` (sauvegarde `employeeId`).
-2. **2. Modules** -> liste (sauvegarde `moduleId`), creation, renommage, suppression.
-3. **3. Menus** -> liste (sauvegarde `menuId`), creation, renommage, suppression.
-4. **4. Captures** -> liste, televersement, modification, reordonnancement, suppression.
-5. **5. Employes** -> liste, creation, modification, suppression.
+1. **1. Authentication** → `Login admin` (saves `employeeId`).
+2. **2. Modules** → list (saves `moduleId`), create, rename, delete.
+3. **3. Menus** → list (saves `menuId`), create, rename, delete.
+4. **4. Captures** → list, upload, update, reorder, delete.
+5. **5. Employees** → list, create, update, delete.
 
-Le plus simple : **Collection Runner** -> selectionner la collection -> **Run**.
-Les dossiers 2 a 5 creent puis suppriment leurs propres donnees : la base
-retrouve son etat initial apres une execution complete.
+The easiest way: **Collection Runner** → select the collection → **Run**.
+Folders 2 to 5 create and then delete their own data, so the database returns
+to its initial state after a full run.
 
-Deux requetes demandent de **choisir un fichier image** avant l'envoi
-(`Televerser une capture`, `Remplacer l'image`) : dans l'onglet *Body*,
-champ `file`, cliquer sur *Select File*.
+Two requests require you to **pick an image file** before sending
+(`Upload a capture`, `Replace the image`): in the *Body* tab, field `file`,
+click *Select File*.
 
-Le dossier **Avance (manuel)** contient `Enregistrer une video` : il ecrase la
-video du menu `menuId` par un GIF 1x1. Ne pas l'executer sur un menu reel.
+The **Advanced (manual)** folder contains `Save a video`: it overwrites the
+`menuId` menu's video with a 1x1 GIF. Do not run it against a real menu.
 
-## 4. Ce que les tests verifient
+## 4. What the tests check
 
-- Authentification : 200 avec identifiants valides, 401 sinon, mot de passe absent de la reponse.
-- Modules / menus / employes : creation, lecture, mise a jour, suppression + coherence des ids et des relations (menu rattache au bon module).
-- Captures : upload multipart, metadonnees, reordonnancement, remplacement d'image, suppression.
-- Codes HTTP et forme des reponses (tableaux, ids numeriques, champs non vides).
+- Authentication: 200 with valid credentials, 401 otherwise, password absent from the response.
+- Modules / menus / employees: create, read, update, delete + id and relationship consistency (menu attached to the right module).
+- Captures: multipart upload, metadata, reordering, image replacement, deletion.
+- HTTP status codes and response shapes (arrays, numeric ids, non-empty fields).
 
-## 5. Ligne pour le CV
+## 5. Résumé line
 
-> Tests d'API avec Postman : collection de 21 requetes, environnement
-> parametre, assertions automatiques (codes HTTP, schema, relations) et
-> scenarios de non-regression executes via Collection Runner.
+> API testing with Postman: a 21-request collection, a parameterised
+> environment, automatic assertions (status codes, schema, relations) and
+> non-regression scenarios run through the Collection Runner.
