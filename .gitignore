@@ -1,0 +1,41 @@
+# Dependances
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+build/
+target/
+*.class
+
+# IDE / editeurs
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+
+# Configuration locale / secrets
+application-local.properties
+.env
+.env.*
+!.env.example
+
+# Sauvegardes de base de donnees (donnees reelles)
+backups/
+
+# Fichiers uploades par les utilisateurs
+uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Assets generes par make_fake_screens.py
+fake_screenshots/
+
+# Logs
+*.log
+logs/

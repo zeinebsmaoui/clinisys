@@ -1,0 +1,729 @@
+{
+  "info": {
+    "_postman_id": "b7f1c2a4-5d6e-4f70-9a11-3c2d8e6b4a90",
+    "name": "Clinisys API",
+    "description": "Collection de test de l'API REST Clinisys (backend Spring Boot).\n\nPrerequis : backend demarre sur http://localhost:8080 (start-backend.cmd).\nEnvironnement : Clinisys Local.\n\nOrdre d'execution : 1. Authentification -> 2. Modules -> 3. Menus -> 4. Captures -> 5. Employes.\nLes dossiers 2 a 5 creent puis suppriment leurs propres donnees de test, sauf le dossier \"Avance\" qui modifie des donnees reelles.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentification",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('retourne un employe', () => {",
+                  "  pm.expect(body.email).to.eql(pm.environment.get('email'));",
+                  "  pm.expect(body.id).to.be.a('number');",
+                  "});",
+                  "pm.test('le mot de passe n\\'est pas expose', () => {",
+                  "  pm.expect(body.password).to.be.null;",
+                  "});",
+                  "pm.collectionVariables.set('employeeId', body.id);",
+                  "pm.collectionVariables.set('employeeRole', body.role);",
+                  "pm.test('role admin', () => pm.expect(body.role).to.eql('admin'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authentifie l'employe et renvoie sa fiche (sans mot de passe). Sauvegarde employeeId et employeeRole pour la suite."
+          }
+        },
+        {
+          "name": "Login - mauvais mot de passe (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('refuse avec 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"mauvais-mot-de-passe\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Verifie qu'un mauvais mot de passe est bien rejete."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Modules",
+      "item": [
+        {
+          "name": "Lister les modules",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const modules = pm.response.json();",
+                  "pm.test('renvoie un tableau', () => pm.expect(modules).to.be.an('array'));",
+                  "pm.test('au moins un module', () => pm.expect(modules.length).to.be.above(0));",
+                  "if (modules.length > 0) {",
+                  "  pm.collectionVariables.set('moduleId', modules[0].id);",
+                  "  pm.test('chaque module a un nom', () => {",
+                  "    modules.forEach(m => pm.expect(m.name, 'module ' + m.id).to.be.a('string'));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/modules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules"]
+            },
+            "description": "Recupere tous les modules. Sauvegarde moduleId = premier module."
+          }
+        },
+        {
+          "name": "Creer un module",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const created = pm.response.json();",
+                  "pm.test('module cree', () => {",
+                  "  pm.expect(created.id).to.be.a('number');",
+                  "  pm.expect(created.name).to.eql('Module test Postman');",
+                  "});",
+                  "pm.collectionVariables.set('createdModuleId', created.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Module test Postman\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules"]
+            },
+            "description": "Cree un module de test et sauvegarde son id dans createdModuleId."
+          }
+        },
+        {
+          "name": "Renommer le module cree",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const updated = pm.response.json();",
+                  "pm.test('nom mis a jour', () => pm.expect(updated.name).to.eql('Module test Postman (renomme)'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Module test Postman (renomme)\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{createdModuleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "{{createdModuleId}}"]
+            },
+            "description": "Renomme le module cree a l'etape precedente."
+          }
+        },
+        {
+          "name": "Supprimer le module cree",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('corps vide', () => pm.expect(pm.response.text()).to.be.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{createdModuleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "{{createdModuleId}}"]
+            },
+            "description": "Nettoie le module de test."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Menus",
+      "item": [
+        {
+          "name": "Lister les menus du module",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const menus = pm.response.json();",
+                  "pm.test('renvoie un tableau', () => pm.expect(menus).to.be.an('array'));",
+                  "if (menus.length > 0) {",
+                  "  pm.collectionVariables.set('menuId', menus[0].id);",
+                  "  pm.test('chaque menu appartient au module', () => {",
+                  "    menus.forEach(menu => {",
+                  "      if (menu.module) pm.expect(menu.module.id).to.eql(pm.collectionVariables.get('moduleId'));",
+                  "    });",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/module/{{moduleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menus", "module", "{{moduleId}}"]
+            },
+            "description": "Menus du premier module. Sauvegarde menuId pour le dossier Captures."
+          }
+        },
+        {
+          "name": "Creer un menu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const created = pm.response.json();",
+                  "pm.test('menu cree et rattache au module', () => {",
+                  "  pm.expect(created.id).to.be.a('number');",
+                  "  pm.expect(created.module.id).to.eql(pm.collectionVariables.get('moduleId'));",
+                  "});",
+                  "pm.collectionVariables.set('createdMenuId', created.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Menu test Postman\",\n  \"hasAdd\": false,\n  \"module\": { \"id\": {{moduleId}} }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/menus",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menus"]
+            },
+            "description": "Cree un menu dans le premier module."
+          }
+        },
+        {
+          "name": "Renommer le menu cree",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const updated = pm.response.json();",
+                  "pm.test('nom mis a jour', () => pm.expect(updated.name).to.eql('Menu test Postman 2'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Menu test Postman 2\",\n  \"module\": { \"id\": {{moduleId}} }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{createdMenuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menus", "{{createdMenuId}}"]
+            },
+            "description": "Renomme le menu de test."
+          }
+        },
+        {
+          "name": "Supprimer le menu cree",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{createdMenuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menus", "{{createdMenuId}}"]
+            },
+            "description": "Nettoie le menu de test."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Captures",
+      "item": [
+        {
+          "name": "Lister les captures d'un menu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const captures = pm.response.json();",
+                  "pm.test('renvoie un tableau', () => pm.expect(captures).to.be.an('array'));",
+                  "if (captures.length > 0) {",
+                  "  pm.test('captures ordonnees', () => {",
+                  "    const positions = captures.map(c => c.position);",
+                  "    pm.expect(positions).to.eql([...positions].sort((a, b) => a - b));",
+                  "  });",
+                  "  pm.collectionVariables.set('captureId', captures[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/captures/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captures", "{{menuId}}"]
+            },
+            "description": "Captures du menu selectionne (dossier 3). Verifie leur ordre d'affichage."
+          }
+        },
+        {
+          "name": "Televerser une capture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const created = pm.response.json();",
+                  "pm.test('fichier enregistre', () => {",
+                  "  pm.expect(created.id).to.be.a('number');",
+                  "  pm.expect(created.imageUrl).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set('uploadedCaptureId', created.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "menuId", "value": "{{menuId}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captures",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captures"]
+            },
+            "description": "Choisir un fichier image dans le champ 'file' avant d'envoyer (multipart/form-data)."
+          }
+        },
+        {
+          "name": "Modifier la capture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const updated = pm.response.json();",
+                  "pm.test('metadonnees mises a jour', () => {",
+                  "  pm.expect(updated.name).to.eql('Capture Postman');",
+                  "  pm.expect(updated.description).to.eql('Description de test');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Capture Postman\",\n  \"description\": \"Description de test\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captures/{{uploadedCaptureId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captures", "{{uploadedCaptureId}}"]
+            },
+            "description": "Modifie le nom et la description de la capture televersee."
+          }
+        },
+        {
+          "name": "Reordonner les captures",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {{uploadedCaptureId}}\n]",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captures/reorder",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captures", "reorder"]
+            },
+            "description": "Envoie la liste ordonnee des ids de captures. Ici avec la capture de test uniquement."
+          }
+        },
+        {
+          "name": "Remplacer l'image",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const updated = pm.response.json();",
+                  "pm.test('image remplacee', () => pm.expect(updated.imageUrl).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "menuId", "value": "{{menuId}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/captures/replace/{{uploadedCaptureId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captures", "replace", "{{uploadedCaptureId}}"]
+            },
+            "description": "Choisir une image dans le champ 'file'."
+          }
+        },
+        {
+          "name": "Supprimer la capture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/captures/{{uploadedCaptureId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "captures", "{{uploadedCaptureId}}"]
+            },
+            "description": "Nettoie la capture de test."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Employes",
+      "item": [
+        {
+          "name": "Lister les employes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const employees = pm.response.json();",
+                  "pm.test('renvoie un tableau non vide', () => {",
+                  "  pm.expect(employees).to.be.an('array');",
+                  "  pm.expect(employees.length).to.be.above(0);",
+                  "});",
+                  "pm.test('chaque employe a un email unique', () => {",
+                  "  const emails = employees.map(e => e.email);",
+                  "  pm.expect(new Set(emails).size).to.eql(emails.length);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees"]
+            },
+            "description": "Liste les employes. Remarque : l'API renvoie actuellement le hash du mot de passe (a corriger cote backend)."
+          }
+        },
+        {
+          "name": "Creer un employe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const created = pm.response.json();",
+                  "pm.test('employe cree', () => {",
+                  "  pm.expect(created.id).to.be.a('number');",
+                  "  pm.expect(created.role).to.eql('employee');",
+                  "});",
+                  "pm.collectionVariables.set('createdEmployeeId', created.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Employe Postman\",\n  \"email\": \"postman-{{$timestamp}}@test.local\",\n  \"password\": \"motdepasse-test\",\n  \"role\": \"employee\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/employees",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees"]
+            },
+            "description": "Cree un employe avec un email unique (timestamp). Le role par defaut est 'employee'."
+          }
+        },
+        {
+          "name": "Mettre a jour l'employe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const updated = pm.response.json();",
+                  "pm.test('nom mis a jour', () => pm.expect(updated.name).to.eql('Employe Postman 2'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Employe Postman 2\",\n  \"email\": \"postman-{{$timestamp}}@test.local\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/{{createdEmployeeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "{{createdEmployeeId}}"]
+            },
+            "description": "Modifie le nom de l'employe de test."
+          }
+        },
+        {
+          "name": "Supprimer l'employe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/{{createdEmployeeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "{{createdEmployeeId}}"]
+            },
+            "description": "Nettoie l'employe de test."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avance (manuel)",
+      "item": [
+        {
+          "name": "Enregistrer une video sur un menu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const updated = pm.response.json();",
+                  "pm.test('video enregistree', () => {",
+                  "  pm.expect(updated.videoData).to.be.a('string');",
+                  "  pm.expect(updated.videoData.startsWith('data:image/gif')).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"videoData\": \"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/menus/{{menuId}}/video",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menus", "{{menuId}}", "video"]
+            },
+            "description": "ATTENTION : remplace la video existante du menu par un GIF 1x1. A lancer uniquement sur un menu de test."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" }
+  ]
+}

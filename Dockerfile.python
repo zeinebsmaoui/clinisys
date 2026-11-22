@@ -1,0 +1,6 @@
+FROM python:3.11-slim
+WORKDIR /app
+COPY video_service.py .
+RUN pip install flask flask-cors Pillow requests
+EXPOSE 5000
+CMD ["python", "video_service.py"]

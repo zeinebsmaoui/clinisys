@@ -1,0 +1,147 @@
+.capture-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 700px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.capture-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.capture-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-close-x {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+}
+
+.btn-close-x:hover {
+  color: #333;
+}
+
+.capture-modal-img {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.capture-modal-img img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.capture-modal-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.capture-modal-description p {
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  border: 1px dashed #ddd;
+  border-radius: 6px;
+}
+
+.capture-modal-description p:hover {
+  border-color: #2563eb;
+  color: #333;
+}
+
+.capture-modal-description textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  font-size: 13px;
+  resize: vertical;
+  outline: none;
+}
+
+.btn-save-desc {
+  margin-top: 6px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.capture-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-telecharger {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-fermer {
+  background: #122a5c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-modifier {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-modifier:hover {
+  background: #1d4ed8;
+}
+
+.btn-telecharger:hover { background: #1d4ed8; }
+.btn-fermer:hover { background: #0d2247; }
+
+.btn-supprimer {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-supprimer:hover { background: #1d4ed8; }
+

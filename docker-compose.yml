@@ -1,0 +1,50 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: clinicsystem-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: clinicsystem
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./clinicsystem/clinicsystem
+    container_name: clinicsystem-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/clinicsystem
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./menu-app
+    container_name: clinicsystem-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: clinicsystem-python
+    ports:
+      - "5000:5000"
+
+volumes:
+  mysql_data:
