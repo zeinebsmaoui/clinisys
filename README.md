@@ -1,157 +1,154 @@
-# Clinisys
+# 🏥 Clinisys
 
-Application de gestion de clinique :
+A clinic management app built with React, Spring Boot and MySQL. Clinisys lets a clinic organise its documentation as **modules → menus → captures**, generate a walkthrough video for each menu, manage employees, and ask a chatbot questions about the screenshots it stores.
 
-| Partie       | Techno                      | Port | Dossier                  |
-| ------------ | --------------------------- | ---- | ------------------------ |
-| Frontend     | React 19 + Vite             | 5173 | `menu-app/`              |
-| Backend      | Spring Boot 4 (Java 17+)    | 8080 | `clinicsystem/clinicsystem/` |
-| Base         | MySQL (XAMPP / WAMP)        | 3306 | base `clinicsystem`      |
-| Service video| Python 3.11+ (Flask, Pillow)| 5000 | `video_service.py`       |
+I built it as a full-stack learning project: a real REST API, a real database, and a UI that talks to both.
 
-## Demarrage rapide (Windows)
+## 🍿 Technologies
 
-1. **Demarrer MySQL** (XAMPP / WAMP / service MySQL).
-2. **Double-cliquer sur `start.cmd`** (ou lancer `npm start`).
+- React 19
+- Vite
+- Spring Boot 4 (Java 17+)
+- MySQL
+- Python 3.11+ (Flask + Pillow) — video generation service
+- Postman
+- Docker
+- CSS
 
-Le script :
+## ✨ Features
 
-- detecte automatiquement un JDK 17 ou plus recent (obligatoire pour le backend) ;
-- demarre le backend dans une fenetre dediee (`http://localhost:8080`) ;
-- demarre le frontend dans une fenetre dediee (`http://localhost:5173`) ;
-- demarre le service video Python dans une fenetre dediee (`http://localhost:5000`) ;
-- ouvre le navigateur.
+Here's what you can do with Clinisys:
 
-Pour tout arreter : **`stop.cmd`** (ou `npm run stop`).
+- **Log in**: authenticate with an email and password. Admins get access to employee management; the session is kept in `localStorage`.
+- **Organise modules**: create, rename and delete modules. Each module holds its own set of menus.
+- **Build menus and submenus**: menus can be nested under a parent menu, renamed, reordered and deleted.
+- **Store captures**: upload screenshots into a menu, view them in a grid, edit the title/description, replace the image, or delete several at once with checkboxes.
+- **Reorder captures**: drag and drop to change the order in which screenshots appear.
+- **Generate a video**: a Python service turns the captures of a menu into an MP4 walkthrough, which can be validated or removed later.
+- **Manage employees**: add, edit and delete staff accounts from the Employees page (admin only).
+- **Ask the chatbot**: the assistant searches the captures and modules the current user is allowed to see, then answers with Groq.
+- **See every error**: any failed API call shows a red banner instead of failing silently in the browser console.
 
-### Scripts disponibles
+## 🧑‍🍳 The Process
 
-| Commande                    | Effet                                     |
-| --------------------------- | ----------------------------------------- |
-| `start.cmd`                 | backend + frontend + video + navigateur   |
-| `start-backend.cmd`         | backend uniquement                        |
-| `start-frontend.cmd`        | frontend uniquement                       |
-| `start-video.cmd`           | service de generation de video uniquement |
-| `stop.cmd`                  | arrete les ports 8080, 5173 et 5000        |
-| `backup-db.cmd`             | sauvegarde la base dans `backups/`        |
-| `npm run dev`               | identique a `start.cmd`                   |
-| `npm run build`             | build de production du frontend           |
+I started with the database, because everything else depends on its shape. A module contains menus, a menu contains captures, and a menu can contain another menu — that self-reference was the first thing I had to model properly in JPA.
 
-## Vos donnees
+Next came the backend: a Spring Boot REST API with controllers, services and repositories for modules, menus, captures and employees, plus a login endpoint. I tested each endpoint in Postman before touching the UI, which saved me from debugging two layers at once.
 
-Tout est stocke dans **MySQL** (base `clinicsystem`), pas dans le navigateur :
+Then the frontend. I built the screens in the order a user meets them: login → module list → sidebar of menus → grid of captures. Each screen is driven by API calls rather than local state, so what you see is what is actually stored in MySQL.
 
-| Donnee    | Table MySQL  |
-| --------- | ------------ |
-| Modules   | `modules`    |
-| Menus     | `menus`      |
-| Captures  | `captures`   |
-| Employes  | `employees`  |
+After the CRUD worked, I added the parts that make it feel finished: drag-and-drop reordering, multi-select deletion, and image upload with file storage on the backend.
 
-Une modification n'est enregistree que si le backend repond. Depuis cette
-version, tout echec est affiche dans un bandeau rouge en haut de l'ecran
-(avant, l'erreur restait invisible dans la console du navigateur).
+Finally the two features that reach outside the main app — a separate Python service that renders captures into an MP4 with Pillow, and a chatbot that answers questions using the stored captures as context.
 
-Sauvegarde manuelle :
+One thing I changed late: errors used to be logged only in the browser console, so a failed save looked like a successful one. Now every API call routes through a notification layer that shows the real error on screen.
 
-```
-backup-db.cmd
-```
+## 📚 What I Learned
 
-Le fichier `.sql` est cree dans `backups/` (a sauvegarder ailleurs, par
-exemple sur un cloud). Restauration :
+- **Modelling a hierarchy in JPA**: a menu pointing at its parent menu taught me how self-referencing entities and recursive JSON serialisation actually behave.
+- **REST API design**: separating controllers, services and repositories made the code longer at first, but every change afterwards stayed small and local.
+- **React state across screens**: keeping the selected module, menu and captures in sync showed me why a single source of truth matters more than passing props everywhere.
+- **Silent failures are worse than errors**: the red error banner was the single biggest improvement to the app's usability.
+- **Environment variables**: secrets belong in `.env` / local config files, never in source code.
+- **Testing with Postman**: running a collection after each change caught broken endpoints before the UI did.
+- **Windows startup scripts**: making one command start three services (Java, Node, Python) meant handling ports, JDK detection and missing dependencies.
 
-```
-mysql -u root -p clinicsystem < backups\clinicsystem-AAAAMMJJ-HHMMSS.sql
-```
+## 💡 How can it be improved?
 
-## Tests d'API (Postman)
+- Add pagination and search to the capture grid.
+- Replace the localStorage session with JWT tokens and a real session expiry.
+- Add a proper image editor (crop, annotate) instead of replace-only.
+- Write automated tests for the backend (JUnit) and the frontend (Vitest).
+- Make the layout responsive — it is currently desktop-first.
+- Add dark mode.
+- Move the database password and API keys into a secrets manager for deployment.
+- Add a "restore" action for deleted modules, menus and captures.
 
-Le dossier `postman/` contient une collection de tests de l'API REST
-(authentification, modules, menus, captures, employes) avec assertions
-automatiques et environnement `Clinisys Local`.
+## 🏃 Running the Project
 
-1. Importer les deux fichiers JSON dans Postman.
-2. Demarrer le backend (`start-backend.cmd`).
-3. Lancer la collection dans l'ordre indique (ou via Collection Runner).
+### Requirements
 
-Details : `postman/README.md`.
+| Part | Technology | Port | Folder |
+| --- | --- | --- | --- |
+| Frontend | React 19 + Vite | 5173 | `menu-app/` |
+| Backend | Spring Boot 4 (Java 17+) | 8080 | `clinicsystem/clinicsystem/` |
+| Database | MySQL (XAMPP / WAMP) | 3306 | database `clinicsystem` |
+| Video service | Python 3.11+ (Flask, Pillow) | 5000 | `video_service.py` |
 
-## Compte de test
+### Steps (Windows)
 
-| Email                | Mot de passe | Role  |
-| -------------------- | ------------ | ----- |
-| `zouba123@gmail.com` | `12345`      | admin |
+1. Clone the repository to your local machine.
+2. Start MySQL (XAMPP, WAMP, or the MySQL service).
+3. Create the local config files (see **Configuration** below).
+4. Run `start.cmd` (or `npm start`) in the project directory. It finds a JDK 17+, starts the backend, the frontend and the video service in separate windows, then opens the browser.
+5. Open http://localhost:5173 if the browser did not open by itself.
 
-Le compte est cree automatiquement au premier demarrage du backend
-(`AdminSeeder`).
+To stop everything: `stop.cmd` (or `npm run stop`).
 
-## Problemes courants
+### Scripts
 
-### « Serveur injoignable » / page de connexion qui refuse tout
+| Command | Effect |
+| --- | --- |
+| `start.cmd` | backend + frontend + video service + browser |
+| `start-backend.cmd` | backend only |
+| `start-frontend.cmd` | frontend only |
+| `start-video.cmd` | video service only |
+| `stop.cmd` | stops ports 8080, 5173 and 5000 |
+| `backup-db.cmd` | dumps the database into `backups/` |
+| `npm run build` | production build of the frontend |
 
-Le backend n'est pas demarre. Lancez `start-backend.cmd` et verifiez que
-`http://localhost:8080/api/menus` repond.
+### Configuration
 
-### « J'ai ajoute un employe / renomme un module et c'est perdu »
+Nothing secret is committed. Two files are created locally and ignored by git:
 
-Ces modifications n'ont pas atteint la base : le backend etait arrete ou
-n'avait pas demarre (voir Java ci-dessous). L'interface affichait l'erreur
-uniquement dans la console du navigateur. Elle s'affiche maintenant dans
-un bandeau rouge. Verifiez l'etat reel des donnees dans MySQL :
+**`clinicsystem/clinicsystem/application-local.properties`** — your MySQL password:
 
-```
-SELECT id, name FROM modules;
-SELECT COUNT(*) FROM captures;
-SELECT id, email, role FROM employees;
-```
-
-### Le backend ne demarre pas : `UnsupportedClassVersionError`
-
-Le `java` du PATH est Java 8. Le backend exige Java 17+ :
-
-- `start.cmd` selectionne automatiquement le bon JDK ;
-- ou installez un JDK recent : `winget install EclipseAdoptium.Temurin.21.JDK`.
-
-### « Generer la video » ne fait rien / affiche une erreur
-
-Le bouton appelle un service Python separe sur le port 5000. Il doit tourner :
-
-```
-start-video.cmd
+```properties
+spring.datasource.password=your_mysql_password
 ```
 
-Le script choisit un Python qui possede Flask + Pillow (le Python 3.15 alpha
-du PATH a un Pillow incompatible, il est ignore au profit de 3.11/3.13).
-Si aucun Python correct n'est trouve, il cree un `.venv` et installe les
-paquets. Verifiez ensuite que `http://localhost:5000` repond.
-
-### Le backend demarre puis echoue sur la base de donnees
-
-L'URL et l'utilisateur sont dans
-`clinicsystem/clinicsystem/src/main/resources/application.properties` :
+**`menu-app/.env`** — your Groq API key for the chatbot (copy `menu-app/.env.example`):
 
 ```
-jdbc:mysql://localhost:3306/clinicsystem
-utilisateur : root
+VITE_GROQ_API_KEY=your_key_here
 ```
 
-Le **mot de passe** n'est pas versionne : il se trouve dans
-`clinicsystem/clinicsystem/application-local.properties` (ignore par git).
-Si ce fichier n'existe pas (apres un clone), creez-le :
+The database URL and user (`root`) stay in `application.properties`.
 
-```
-spring.datasource.password=votre_mot_de_passe_mysql
-```
+### Test account
 
-### `npm run dev` ne fait rien a la racine
+| Email | Password | Role |
+| --- | --- | --- |
+| `zouba123@gmail.com` | `12345` | admin |
 
-La racine n'avait pas de script `dev` : c'est corrige, `npm run dev`
-lance desormais `start.ps1`. Le serveur Vite seul se lance avec
-`npm run frontend` ou depuis `menu-app/`.
+Created automatically on the backend's first start (`AdminSeeder`).
 
-## Docker (optionnel)
+### API tests (Postman)
 
-`docker-compose.yml` fournit MySQL (3307), le backend (8080), le frontend
-(80) et le service Python (5000). Docker n'est pas necessaire pour le
-developpement local decrit ci-dessus.
+The `postman/` folder holds a REST API collection (auth, modules, menus, captures, employees) with automatic assertions and a `Clinisys Local` environment.
+
+1. Import both JSON files into Postman.
+2. Start the backend (`start-backend.cmd`).
+3. Run the collection in the listed order, or with the Collection Runner.
+
+Details: `postman/README.md`.
+
+### Docker (optional)
+
+`docker-compose.yml` runs MySQL (3307), the backend (8080), the frontend (80) and the Python service (5000). Docker is not required for local development.
+
+## 🐛 Troubleshooting
+
+**"Server unreachable" / login refuses everything** — the backend is not running. Start `start-backend.cmd` and check that http://localhost:8080/api/menus responds.
+
+**A change disappeared after refresh** — it never reached MySQL; the backend was stopped. The red banner now tells you when that happens.
+
+**`UnsupportedClassVersionError`** — your `java` on the PATH is Java 8. `start.cmd` selects a correct JDK automatically, or install: `winget install EclipseAdoptium.Temurin.21.JDK`.
+
+**"Generate video" does nothing** — the Python service on port 5000 is not running. Start it with `start-video.cmd`; the script finds a Python that has Flask and Pillow, or creates a `.venv`.
+
+**The chatbot answers with an error** — `menu-app/.env` is missing or `VITE_GROQ_API_KEY` is empty. Vite only reads `.env` at startup, so restart the dev server after editing it.
+
+## 🎥 Video
+
+<!-- Add a demo GIF or MP4 here, e.g. a screen recording of the module → menu → capture flow. -->
